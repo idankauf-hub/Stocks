@@ -1,52 +1,40 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
-import NxWelcome from './nx-welcome';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useAuthStore } from '../stores/AuthStore';
+import LoginPage from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
+import Sidebar from '../components/Sidebar';
+import PortfolioPage from '../pages/PortfolioPage';
+import StockDetailPage from '../pages/StockDetailPage';
+import { Spinner } from '../components/Spinner/Spinner';
 
-import { Route, Routes, Link } from 'react-router-dom';
+export const AppRoutes = observer(() => {
+  const authStore = useAuthStore();
 
-export function App() {
-  return (
-    <div>
-      <NxWelcome title="client" />
+  if (!authStore.initialized) {
+    return <Spinner />;
+  }
 
-      {/* START: routes */}
-      {/* These routes and navigation have been generated for you */}
-      {/* Feel free to move and update them to fit your needs */}
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div>
+  if (!authStore.user) {
+    return (
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
-            </div>
-          }
-        />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-      {/* END: routes */}
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <Sidebar />
+      <div style={{ flex: 1 }}>
+        <Routes>
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/stock/:symbol" element={<StockDetailPage />} />
+          <Route path="*" element={<Navigate to="/portfolio" replace />} />
+        </Routes>
+      </div>
     </div>
   );
-}
-
-export default App;
+});
