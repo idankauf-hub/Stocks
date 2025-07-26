@@ -9,7 +9,7 @@ import {
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuthStore } from '../stores/AuthStore';
-import { useViewedStocksStore } from '../stores/ViewdStocksStore';
+import { useViewedStocksStore } from '../stores/ViewedStocksStore';
 import { observer } from 'mobx-react-lite';
 
 interface SidebarLayoutProps {
@@ -116,7 +116,7 @@ export const Sidebar = observer(({ children }: SidebarLayoutProps) => {
                                     <IconButton
                                         size="small"
                                         onClick={(e) => {
-                                            e.stopPropagation(); // prevent row click
+                                            e.stopPropagation();
                                             viewedStocksStore.remove(symbol);
                                         }}
                                         sx={{ color: 'gray' }}

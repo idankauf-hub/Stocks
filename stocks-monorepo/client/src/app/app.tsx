@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useAuthStore } from '../stores/AuthStore';
-import LoginPage from '../pages/LoginPage';
+import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { Sidebar } from '../components/Sidebar';
-import PortfolioPage from '../pages/PortfolioPage';
+import { PortfolioPage } from '../pages/PortfolioPage';
 import { StockDetailPage } from '../pages/StockDetailPage';
 import { Spinner } from '../components/Spinner/Spinner';
 

@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import React, { createContext, useContext } from 'react';
+import { ViewedStocksStore, viewedStocksStore } from './ViewedStocksStore';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 class AuthStore {
     user: any = null;
@@ -9,15 +10,16 @@ class AuthStore {
     loading = false;
     error: string | null = null;
 
-    constructor() {
+    constructor(private viewedStocksStore: ViewedStocksStore) {
         makeAutoObservable(this);
 
-        // Load token & user from localStorage if available
         const savedToken = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
+
         if (savedToken && savedUser) {
             this.token = savedToken;
             this.user = JSON.parse(savedUser);
+            this.viewedStocksStore.setUser(this.user.email);
         }
     }
 
@@ -31,9 +33,7 @@ class AuthStore {
                 body: JSON.stringify({ email, password }),
             });
 
-            if (!res.ok) {
-                throw new Error('Registration failed');
-            }
+            if (!res.ok) throw new Error('Registration failed');
 
             const data = await res.json();
             this.user = data.user;
@@ -41,6 +41,8 @@ class AuthStore {
 
             localStorage.setItem('token', data.access_token);
             localStorage.setItem('user', JSON.stringify(data.user));
+
+            this.viewedStocksStore.setUser(email);
         } catch (e: any) {
             this.error = e.message || 'Registration failed';
         } finally {
@@ -58,9 +60,7 @@ class AuthStore {
                 body: JSON.stringify({ email, password }),
             });
 
-            if (!res.ok) {
-                throw new Error('Login failed');
-            }
+            if (!res.ok) throw new Error('Login failed');
 
             const data = await res.json();
             this.user = data.user;
@@ -68,6 +68,8 @@ class AuthStore {
 
             localStorage.setItem('token', data.access_token);
             localStorage.setItem('user', JSON.stringify(data.user));
+
+            this.viewedStocksStore.setUser(email);
         } catch (e: any) {
             this.error = e.message || 'Login failed';
         } finally {
@@ -80,15 +82,15 @@ class AuthStore {
         this.token = null;
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        this.viewedStocksStore.clear();
     }
 }
 
-// === Context Setup ===
 
 const AuthStoreContext = createContext<AuthStore | null>(null);
 
 export const AuthStoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const store = React.useMemo(() => new AuthStore(), []);
+    const store = React.useMemo(() => new AuthStore(viewedStocksStore), []);
     return (
         <AuthStoreContext.Provider value={store}>
             {children}

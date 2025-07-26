@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import {
-    Card,
-    CardContent,
-    Typography,
-    IconButton,
-    Alert,
-} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
+import {
+    Alert,
+    Card,
+    CardContent,
+    IconButton,
+    Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 import { Quote } from '../../../shared/types/quote';
 import { usePortfolioStore } from '../stores/PortfolioStore';
+import { QuoteDisplay } from './QuoteDisplay';
 
 type StockCardProps = {
     symbol: string;
@@ -70,17 +71,7 @@ export const StockCard = ({ symbol, name, onAdd, onRemove, onClick, minimal }: S
                             {error ? (
                                 <Alert severity="error">{error}</Alert>
                             ) : quote ? (
-                                <>
-                                    <Typography color="textSecondary">
-                                        Price: ${quote.price.toFixed(2)}
-                                    </Typography>
-                                    <Typography
-                                        color={quote.changePercentage >= 0 ? 'success.main' : 'error.main'}
-                                    >
-                                        {quote.changePercentage >= 0 ? '+' : ''}
-                                        {quote.changePercentage.toFixed(2)}%
-                                    </Typography>
-                                </>
+                                <QuoteDisplay quote={quote} />
                             ) : (
                                 <Typography>Loading...</Typography>
                             )}

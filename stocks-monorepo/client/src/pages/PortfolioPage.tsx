@@ -23,7 +23,7 @@ interface StockSearchResult {
     name: string;
 }
 
-const PortfolioPage: React.FC = observer(() => {
+export const PortfolioPage = observer(() => {
     const portfolioStore = usePortfolioStore();
     const authStore = useAuthStore();
     const [searchText, setSearchText] = useState('');
@@ -128,7 +128,6 @@ const PortfolioPage: React.FC = observer(() => {
                     )}
                 </Paper>
 
-                {/* Portfolio Section */}
                 <Paper
                     elevation={3}
                     sx={{
@@ -165,4 +164,3 @@ const PortfolioPage: React.FC = observer(() => {
     );
 });
 
-export default PortfolioPage;
