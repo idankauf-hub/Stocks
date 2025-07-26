@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PortfolioService } from './portfolio.service';
-import { AddStockDto } from './dto';
 import { StockService } from './stock.service';
+import { Public } from '../guards/public.decorator';
 
 @Controller('portfolio')
 export class PortfolioController {
@@ -10,26 +18,36 @@ export class PortfolioController {
     private readonly stockService: StockService
   ) {}
 
-  @Get(':userId')
-  getPortfolio(@Param('userId') userId: string) {
-    return this.portfolioService.getPortfolio(userId);
+  @Public()
+  @Get('search/:query')
+  searchStocks(@Param('query') query: string) {
+    return this.stockService.searchStocks(query);
   }
 
-  @Post(':userId')
-  addStock(@Param('userId') userId: string, @Body() dto: AddStockDto) {
-    return this.portfolioService.addStock(userId, dto.symbol);
-  }
-
-  @Delete(':userId/:symbol')
-  removeStock(
-    @Param('userId') userId: string,
-    @Param('symbol') symbol: string
-  ) {
-    return this.portfolioService.removeStock(userId, symbol);
-  }
-
+  @Public()
   @Get('quote/:symbol')
   getStockQuote(@Param('symbol') symbol: string) {
     return this.stockService.getQuote(symbol);
+  }
+
+  @Post('add')
+  addStock(@Req() req: any, @Body('symbol') symbol: string) {
+    const userId = req.user?.userId;
+    if (!userId) throw new UnauthorizedException('User not authenticated');
+    return this.portfolioService.addStock(userId, symbol);
+  }
+
+  @Post('remove')
+  removeStock(@Req() req: any, @Body('symbol') symbol: string) {
+    const userId = req.user?.userId;
+    if (!userId) throw new UnauthorizedException('User not authenticated');
+    return this.portfolioService.removeStock(userId, symbol);
+  }
+
+  @Get()
+  getPortfolio(@Req() req: any) {
+    const userId = req.user?.userId;
+    if (!userId) throw new UnauthorizedException('User not authenticated');
+    return this.portfolioService.getPortfolio(userId);
   }
 }

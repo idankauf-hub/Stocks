@@ -6,7 +6,7 @@ export type PortfolioDocument = Portfolio & Document;
 @Schema()
 export class Portfolio {
   @Prop({ required: true })
-  userId: string;
+  userEmail: string;
 
   @Prop({ type: [String], default: [] })
   stocks: string[];

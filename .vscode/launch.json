@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug NestJS",
+        "runtimeArgs": [
+          "-r",
+          "ts-node/register",
+          "-r",
+          "tsconfig-paths/register"
+        ],
+        "program": "${workspaceFolder}/stocks-monorepo/server/src/main.ts",
+        "cwd": "${workspaceFolder}/stocks-monorepo/server",
+        "skipFiles": ["<node_internals>/**"],
+        "sourceMaps": true,
+        "resolveSourceMapLocations": [
+          "${workspaceFolder}/**",
+          "!**/node_modules/**"
+        ],
+        "env": {
+          "TS_NODE_PROJECT": "${workspaceFolder}/stocks-monorepo/server/tsconfig.json"
+        }
+      }
+    ]
+  }
+  

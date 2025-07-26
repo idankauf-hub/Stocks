@@ -1,26 +1,30 @@
 import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { Quote } from '../../../shared/types/quote';
 
-interface QuoteDisplayProps {
-    quote: {
-        symbol: string;
-        price: number;
-        percentChange: number;
-        lastUpdated: string;
-    };
+
+type QuoteDisplayProps = {
+    quote: Quote
 }
 
-const QuoteDisplay: React.FC<QuoteDisplayProps> = ({ quote }) => (
-    <Card sx={{ minWidth: 200, mb: 2 }}>
-        <CardContent>
-            <Typography variant="h6">{quote.symbol}</Typography>
-            <Typography>Price: ${quote.price}</Typography>
-            <Typography color={quote.percentChange >= 0 ? 'green' : 'red'}>
-                {quote.percentChange >= 0 ? '+' : ''}{quote.percentChange}%
-            </Typography>
-            <Typography variant="caption">Last updated: {quote.lastUpdated}</Typography>
-        </CardContent>
-    </Card>
-);
+export const QuoteDisplay = ({ quote }: QuoteDisplayProps) => {
+    const isPositive = quote.changePercentage >= 0;
 
-export default QuoteDisplay; 
+    return (
+        <Box>
+            <Typography variant="h6">
+                Price: ${quote.price.toFixed(2)}
+            </Typography>
+
+            <Typography variant="subtitle1" color={isPositive ? 'green' : 'red'}>
+                {isPositive ? '+' : ''}
+                {quote.change.toFixed(2)} ({quote.changePercentage.toFixed(2)}%)
+            </Typography>
+
+            <Typography variant="caption" color="textSecondary">
+                Last updated: {new Date(quote.timestamp * 1000).toLocaleString()}
+            </Typography>
+        </Box>
+    );
+};
+

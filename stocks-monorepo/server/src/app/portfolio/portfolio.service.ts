@@ -10,20 +10,23 @@ export class PortfolioService {
     private portfolioModel: Model<PortfolioDocument>
   ) {}
 
-  async getPortfolio(userId: string): Promise<PortfolioDocument> {
-    let portfolio = await this.portfolioModel.findOne({ userId });
-    if (!portfolio) {
-      portfolio = new this.portfolioModel({ userId, stocks: [] });
-      await portfolio.save();
+  async getPortfolio(email: string): Promise<PortfolioDocument> {
+    let p = await this.portfolioModel.findOne({ userEmail: email });
+    if (!p) {
+      p = new this.portfolioModel({ userEmail: email, stocks: [] });
+      await p.save();
     }
-    return portfolio;
+    return p;
   }
 
-  async addStock(userId: string, symbol: string): Promise<PortfolioDocument> {
-    const portfolio = await this.getPortfolio(userId);
+  async addStock(
+    userEmail: string,
+    symbol: string
+  ): Promise<PortfolioDocument> {
+    const portfolio = await this.getPortfolio(userEmail);
     if (!portfolio.stocks.includes(symbol)) {
       portfolio.stocks.push(symbol);
-      await (portfolio as any).save();
+      await portfolio.save();
     }
     return portfolio;
   }
@@ -34,7 +37,7 @@ export class PortfolioService {
   ): Promise<PortfolioDocument> {
     const portfolio = await this.getPortfolio(userId);
     portfolio.stocks = portfolio.stocks.filter((s) => s !== symbol);
-    await (portfolio as any).save();
+    await portfolio.save();
     return portfolio;
   }
 }
