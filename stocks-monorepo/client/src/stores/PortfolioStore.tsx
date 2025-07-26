@@ -4,10 +4,6 @@ import React, { createContext, useContext } from 'react';
 import { Quote } from '../../../shared/types/quote';
 import { addToPortfolio, fetchQuote, getPortfolio, removeFromPortfolio } from '../utils/api';
 
-interface PortfolioResponse {
-    stocks: string[];
-}
-
 class PortfolioStore {
     stocks: string[] = [];
     quotes: Record<string, Quote> = {};
