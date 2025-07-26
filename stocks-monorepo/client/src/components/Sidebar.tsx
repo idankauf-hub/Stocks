@@ -97,14 +97,14 @@ export const Sidebar = observer(({ children }: SidebarLayoutProps) => {
                                     borderRadius={1}
                                     sx={{
                                         transition: 'background 0.2s',
+                                        cursor: 'pointer',
                                         '&:hover': {
                                             backgroundColor: '#f0f0f0',
                                         },
                                     }}
+                                    onClick={() => navigate(`/stock/${symbol}`)}
                                 >
-                                    <Button
-                                        onClick={() => navigate(`/stock/${symbol}`)}
-                                        size="small"
+                                    <Typography
                                         sx={{
                                             textTransform: 'none',
                                             fontSize: '0.875rem',
@@ -112,16 +112,20 @@ export const Sidebar = observer(({ children }: SidebarLayoutProps) => {
                                         }}
                                     >
                                         {symbol}
-                                    </Button>
+                                    </Typography>
                                     <IconButton
                                         size="small"
-                                        onClick={() => viewedStocksStore.remove(symbol)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // prevent row click
+                                            viewedStocksStore.remove(symbol);
+                                        }}
                                         sx={{ color: 'gray' }}
                                     >
                                         <CloseIcon fontSize="small" />
                                     </IconButton>
                                 </Box>
                             ))
+
                         )}
                     </Box>
                 </Box>

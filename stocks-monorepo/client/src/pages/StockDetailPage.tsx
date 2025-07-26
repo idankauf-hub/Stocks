@@ -16,6 +16,7 @@ import { Quote } from '../../../shared/types/quote'
 import { useViewedStocksStore } from '../stores/ViewdStocksStore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Grid from '@mui/material/Grid';
+import { fetchQuote } from '../utils/api';
 
 
 const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
@@ -31,18 +32,10 @@ export const StockDetailPage = () => {
     const navigate = useNavigate();
 
 
-
     useEffect(() => {
-        if (symbol) {
-            viewedStocksStore.add(symbol);
-        }
-    }, [symbol]);
-
-
-    useEffect(() => {
-        const fetchQuote = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await axios.get(`/api/portfolio/quote/${symbol}`);
+                const data = await fetchQuote(symbol!);
                 setQuote(data);
             } catch (err: any) {
                 setError(err?.response?.data?.message || 'Failed to load stock data');
@@ -51,7 +44,10 @@ export const StockDetailPage = () => {
             }
         };
 
-        fetchQuote();
+        if (symbol) {
+            viewedStocksStore.add(symbol);
+            fetchData();
+        }
     }, [symbol]);
 
     if (loading) return <CircularProgress />;

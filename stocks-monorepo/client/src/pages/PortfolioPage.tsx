@@ -6,13 +6,17 @@ import {
     CircularProgress,
     TextField,
     IconButton,
+    Paper,
+    Divider,
 } from '@mui/material';
-
+import CloseIcon from '@mui/icons-material/Close';
 import { StockCard } from '../components/StockCard';
 import { usePortfolioStore } from '../stores/PortfolioStore';
+import { useAuthStore } from '../stores/AuthStore';
 import axios from 'axios';
 import { useDebounce } from '../hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
+import { searchStocks } from '../utils/api';
 
 interface StockSearchResult {
     symbol: string;
@@ -21,11 +25,14 @@ interface StockSearchResult {
 
 const PortfolioPage: React.FC = observer(() => {
     const portfolioStore = usePortfolioStore();
+    const authStore = useAuthStore();
     const [searchText, setSearchText] = useState('');
     const [searchResults, setSearchResults] = useState<StockSearchResult[]>([]);
     const [loading, setLoading] = useState(false);
     const debouncedSearchText = useDebounce(searchText, 500);
     const navigate = useNavigate();
+
+    const username = authStore.user?.email?.split('@')[0] || 'Investor';
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -35,9 +42,7 @@ const PortfolioPage: React.FC = observer(() => {
             }
             setLoading(true);
             try {
-                const { data } = await axios.get<StockSearchResult[]>(
-                    `/api/portfolio/search/${debouncedSearchText}`
-                );
+                const data = await searchStocks(debouncedSearchText);
                 setSearchResults(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error(err);
@@ -49,7 +54,6 @@ const PortfolioPage: React.FC = observer(() => {
         fetchResults();
     }, [debouncedSearchText]);
 
-
     useEffect(() => {
         portfolioStore.loadInitialPortfolio();
     }, []);
@@ -59,37 +63,44 @@ const PortfolioPage: React.FC = observer(() => {
     };
 
     return (
-        <Box p={4}>
-            <Typography variant="h4" mb={4}>
-                Manage Your Portfolio
+        <Box p="4">
+            <Typography variant="h4" fontWeight="bold" mb={2}>
+                Hey {username}, your stock portfolio
+            </Typography>
+            <Typography variant="body1" mb={4} color="text.secondary">
+                Search, track, and manage your favorite stocks.
             </Typography>
 
-            <Box display="flex" gap={4} flexWrap="wrap">
-                <Box
-                    flex={1}
-                    minWidth="350px"
-                    maxHeight="70vh"
-                    overflow="auto"
-                    border="1px solid #ddd"
-                    borderRadius={1}
-                    p={2}
+            <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={4}>
+                <Paper
+                    elevation={3}
+                    sx={{
+                        flex: 1,
+                        minWidth: 300,
+                        maxHeight: '70vh',
+                        overflowY: 'auto',
+                        p: 3,
+                        borderRadius: 2,
+                    }}
                 >
+                    <Typography variant="h6" fontWeight="medium" mb={2}>
+                        Search Stocks
+                    </Typography>
                     <TextField
                         fullWidth
-                        label="Search Stocks"
+                        placeholder="Enter stock symbol or name"
                         variant="outlined"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        sx={{ mb: 2 }}
                         InputProps={{
                             endAdornment: searchText && (
                                 <IconButton onClick={() => setSearchText('')}>
-                                    ✕
+                                    <CloseIcon />
                                 </IconButton>
                             ),
                         }}
+                        sx={{ mb: 2 }}
                     />
-
                     {loading ? (
                         <CircularProgress />
                     ) : (
@@ -108,34 +119,47 @@ const PortfolioPage: React.FC = observer(() => {
                                     </Box>
                                 );
                             })}
+                            {!loading &&
+                                debouncedSearchText.length >= 2 &&
+                                searchResults.length === 0 && (
+                                    <Typography color="text.secondary">No results found.</Typography>
+                                )}
                         </>
                     )}
-                    {!loading && debouncedSearchText.length >= 2 && searchResults.length === 0 && (
-                        <Typography>No results found.</Typography>
-                    )}
-                </Box>
+                </Paper>
 
-                <Box
-                    flex={1}
-                    minWidth="350px"
-                    maxHeight="70vh"
-                    overflow="auto"
-                    border="1px solid #ddd"
-                    borderRadius={1}
-                    p={2}
-                >                    <Typography variant="h5" mb={2}>
+                {/* Portfolio Section */}
+                <Paper
+                    elevation={3}
+                    sx={{
+                        flex: 1,
+                        minWidth: 300,
+                        maxHeight: '70vh',
+                        overflowY: 'auto',
+                        p: 3,
+                        borderRadius: 2,
+                    }}
+                >
+                    <Typography variant="h6" fontWeight="medium" mb={2}>
                         My Saved Stocks
                     </Typography>
-                    {portfolioStore.stocks.map((s) => (
-                        <Box key={s} mb={2}>
-                            <StockCard
-                                symbol={s}
-                                onClick={() => navigate(`/stock/${s}`)}
-                                onRemove={() => portfolioStore.removeStock(s)}
-                            />
-                        </Box>
-                    ))}
-                </Box>
+                    <Divider sx={{ mb: 2 }} />
+                    {portfolioStore.stocks.length === 0 ? (
+                        <Typography color="text.secondary">
+                            You haven’t added any stocks yet.
+                        </Typography>
+                    ) : (
+                        portfolioStore.stocks.map((s) => (
+                            <Box key={s} mb={2}>
+                                <StockCard
+                                    symbol={s}
+                                    onClick={() => navigate(`/stock/${s}`)}
+                                    onRemove={() => portfolioStore.removeStock(s)}
+                                />
+                            </Box>
+                        ))
+                    )}
+                </Paper>
             </Box>
         </Box>
     );

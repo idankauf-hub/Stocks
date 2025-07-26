@@ -1,6 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import axios, { AxiosRequestConfig } from 'axios';
 import React, { createContext, useContext } from 'react';
+import { Quote } from '../../../shared/types/quote';
+import { addToPortfolio, fetchQuote, getPortfolio, removeFromPortfolio } from '../utils/api';
 
 interface PortfolioResponse {
     stocks: string[];
@@ -8,6 +10,8 @@ interface PortfolioResponse {
 
 class PortfolioStore {
     stocks: string[] = [];
+    quotes: Record<string, Quote> = {};
+    quoteTimestamps: Record<string, number> = {};
     hasLoaded = false;
 
     constructor() {
@@ -32,11 +36,7 @@ class PortfolioStore {
     async loadInitialPortfolio() {
         if (this.hasLoaded) return;
         try {
-            const data = await this.requestWithAuth<PortfolioResponse>({
-                method: 'GET',
-                url: '/api/portfolio',
-            });
-
+            const data = await getPortfolio();
             runInAction(() => {
                 this.stocks = data.stocks || [];
                 this.hasLoaded = true;
@@ -46,14 +46,30 @@ class PortfolioStore {
         }
     }
 
+    async loadQuote(symbol: string): Promise<Quote | null> {
+        const now = Date.now();
+        const TTL = 60_000;
+
+        if (this.quotes[symbol] && now - (this.quoteTimestamps[symbol] ?? 0) < TTL) {
+            return this.quotes[symbol];
+        }
+
+        try {
+            const data = await fetchQuote(symbol);
+            runInAction(() => {
+                this.quotes[symbol] = data;
+                this.quoteTimestamps[symbol] = now;
+            });
+            return data;
+        } catch (err) {
+            console.error(`Failed to load quote for ${symbol}`, err);
+            return null;
+        }
+    }
+
     async addStock(symbol: string) {
         try {
-            await this.requestWithAuth({
-                method: 'POST',
-                url: '/api/portfolio/add',
-                data: { symbol },
-            });
-
+            await addToPortfolio(symbol);
             runInAction(() => {
                 if (!this.stocks.includes(symbol)) {
                     this.stocks.push(symbol);
@@ -66,14 +82,10 @@ class PortfolioStore {
 
     async removeStock(symbol: string) {
         try {
-            await this.requestWithAuth({
-                method: 'POST',
-                url: '/api/portfolio/remove',
-                data: { symbol },
-            });
-
+            await removeFromPortfolio(symbol);
             runInAction(() => {
                 this.stocks = this.stocks.filter((s) => s !== symbol);
+                delete this.quotes[symbol];
             });
         } catch (error: any) {
             console.error('Failed to remove stock:', error?.response?.data || error.message);

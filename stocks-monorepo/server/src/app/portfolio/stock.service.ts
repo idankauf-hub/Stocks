@@ -19,7 +19,7 @@ export class StockService {
     if (cached && Date.now() - cached.timestamp < this.TTL) {
       return cached.value;
     }
-    this.cache.delete(key); // stale
+    this.cache.delete(key);
     return null;
   }
 

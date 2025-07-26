@@ -5,13 +5,12 @@ import {
     Typography,
     IconButton,
     Alert,
-    Button,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getStockQuote } from '../utils/api';
 import { Quote } from '../../../shared/types/quote';
+import { usePortfolioStore } from '../stores/PortfolioStore';
 
 type StockCardProps = {
     symbol: string;
@@ -23,21 +22,23 @@ type StockCardProps = {
 };
 
 export const StockCard = ({ symbol, name, onAdd, onRemove, onClick, minimal }: StockCardProps) => {
+    const portfolioStore = usePortfolioStore();
     const [quote, setQuote] = useState<Quote | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (minimal) return;
-        getStockQuote(symbol)
+        portfolioStore.loadQuote(symbol)
             .then((data) => {
-                setQuote(data);
-                setError(null);
+                if (data) {
+                    setQuote(data);
+                    setError(null);
+                } else {
+                    setError('No data');
+                }
             })
-            .catch((err) => {
-                const message = err?.response?.data?.message || 'Failed to load stock data.';
-                setError(message);
-            });
-    }, [symbol, minimal]);
+            .catch(() => setError('Failed to fetch quote'));
+    }, [symbol]);
 
     return (
         <Card
@@ -45,6 +46,11 @@ export const StockCard = ({ symbol, name, onAdd, onRemove, onClick, minimal }: S
                 mb: 2,
                 width: '100%',
                 cursor: onClick ? 'pointer' : 'default',
+                '&:hover': {
+                    boxShadow: 4,
+                    transform: 'scale(1.01)',
+                    transition: 'all 0.2s',
+                },
             }}
             onClick={onClick}
         >
@@ -108,4 +114,3 @@ export const StockCard = ({ symbol, name, onAdd, onRemove, onClick, minimal }: S
         </Card>
     );
 };
-

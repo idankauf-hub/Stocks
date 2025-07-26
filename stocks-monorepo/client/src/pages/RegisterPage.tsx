@@ -1,4 +1,3 @@
-// apps/client/src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, TextField, Box, Typography, Link } from '@mui/material';

@@ -1,23 +1,42 @@
 import axios from 'axios';
+import { Quote } from '../../../shared/types/quote';
 
-const BASE_URL = 'http://localhost:3000/api';
+const API_BASE = '/api/portfolio';
 
-export const getPortfolio = async (userId: string) => {
-  const res = await axios.get(`${BASE_URL}/portfolio/${userId}`);
-  return res.data;
+const AUTH_HEADER = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const addStock = async (userId: string, symbol: string) => {
-  const res = await axios.post(`${BASE_URL}/portfolio/${userId}`, { symbol });
-  return res.data;
+export const fetchQuote = async (symbol: string): Promise<Quote> => {
+  const { data } = await axios.get(`${API_BASE}/quote/${symbol}`);
+  return data;
 };
 
-export const removeStock = async (userId: string, symbol: string) => {
-  const res = await axios.delete(`${BASE_URL}/portfolio/${userId}/${symbol}`);
-  return res.data;
+export const searchStocks = async (query: string) => {
+  const { data } = await axios.get(`${API_BASE}/search/${query}`);
+  return data;
 };
 
-export const getStockQuote = async (symbol: string) => {
-  const response = await axios.get(`/api/portfolio/quote/${symbol}`);
-  return response.data;
+export const getPortfolio = async () => {
+  const { data } = await axios.get(API_BASE, { headers: AUTH_HEADER() });
+  return data;
+};
+
+export const addToPortfolio = async (symbol: string) => {
+  const { data } = await axios.post(
+    `${API_BASE}/add`,
+    { symbol },
+    { headers: AUTH_HEADER() }
+  );
+  return data;
+};
+
+export const removeFromPortfolio = async (symbol: string) => {
+  const { data } = await axios.post(
+    `${API_BASE}/remove`,
+    { symbol },
+    { headers: AUTH_HEADER() }
+  );
+  return data;
 };
